@@ -1,6 +1,7 @@
 import { readFileSync } from "fs";
 import path from "path";
 import { defineConfig } from "vite";
+import dts from "vite-plugin-dts";
 
 const packageJson = JSON.parse(
   readFileSync("./package.json", { encoding: "utf-8" })
@@ -32,4 +33,9 @@ export default defineConfig({
       external: [...Object.keys(globals)],
     },
   },
+  plugins: [
+    dts({
+      exclude: ["**/tests/**/*", "**/demo/**/*"],
+    }),
+  ],
 });

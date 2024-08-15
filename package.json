@@ -24,7 +24,7 @@
     "url": "https://github.com/tomfanhm/cloudflare-images-kit/issues"
   },
   "homepage": "https://github.com/tomfanhm/cloudflare-images-kit#readme",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "type": "module",
@@ -44,7 +44,8 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
     "uuid": "^10.0.0",
-    "vite": "^5.4.0"
+    "vite": "^5.4.0",
+    "vite-plugin-dts": "^4.0.3"
   },
   "dependencies": {
     "zod": "^3.23.8"
