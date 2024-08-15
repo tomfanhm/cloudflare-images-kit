@@ -99,6 +99,20 @@ describe("CloudflareImage", () => {
       expect(response?.success).toBe(true);
     });
   });
+  // Test function uploadImageWithBuffer
+  describe("uploadImageWithBuffer", () => {
+    test("should upload an image with buffer", async () => {
+      const imageUrl = "https://picsum.photos/id/237/1280/720";
+      const buffer = await fetch(imageUrl)
+        .then((res) => res.arrayBuffer())
+        .then((arrayBuffer) => Buffer.from(arrayBuffer));
+      const response = await cloudflareImages.uploadImageWithBuffer(
+        buffer,
+        "image.jpg"
+      );
+      expect(response?.success).toBe(true);
+    });
+  });
   // Test function listImages
   describe("listImages", () => {
     test("should list images", async () => {

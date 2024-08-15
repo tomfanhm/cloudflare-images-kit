@@ -8,7 +8,6 @@ import {
   ImageResultSchema,
   UpdateImageResponseSchema,
 } from "./validations";
-
 interface CloudflareImagesConfig {
   accountId: string;
   apiKey: string;
@@ -113,6 +112,18 @@ class CloudflareImages {
 
     return uuid;
   }
+  // Parse the response from the zod schema
+  private async handleResponse<T>(
+    response: Response,
+    parser: (el: unknown) => T
+  ): Promise<T> {
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+    const data = await response.json();
+    return parser(data);
+  }
+  // Upload an image to Cloudflare Images
   // Validate an image file
   private async validateImage(file: File): Promise<boolean> {
     // Validate file size
@@ -131,30 +142,6 @@ class CloudflareImages {
     if (!validTypes.includes(file.type)) {
       throw new Error("Unsupported image format.");
     }
-
-    // Load image to check dimensions
-    const img = new Image();
-    img.src = URL.createObjectURL(file);
-    await new Promise((resolve, reject) => {
-      img.onload = resolve;
-      img.onerror = reject;
-    });
-
-    // Check dimensions
-    if (img.width > 12000 || img.height > 12000) {
-      throw new Error(
-        "Image dimensions exceed the maximum limit of 12,000 pixels on any side."
-      );
-    }
-
-    // Check maximum area
-    if (img.width * img.height > 100 * 1000000) {
-      // 100 megapixels
-      throw new Error(
-        "Image area exceeds the maximum limit of 100 megapixels."
-      );
-    }
-
     return true;
   }
   // Upload an image to Cloudflare Images
@@ -181,11 +168,11 @@ class CloudflareImages {
         },
         body: formData,
       });
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-      const data = await response.json();
-      return UploadImageResponseSchema.parse(data);
+
+      return await this.handleResponse(
+        response,
+        UploadImageResponseSchema.parse
+      );
     } catch (error) {
       console.error("Error uploading image:", error);
     } finally {
@@ -217,11 +204,48 @@ class CloudflareImages {
         },
         body: formData,
       });
-      if (!response.ok) {
-        throw new Error(response.statusText);
+      return await this.handleResponse(
+        response,
+        UploadImageResponseSchema.parse
+      );
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    } finally {
+      this.checkBatchToken();
+    }
+    return null;
+  }
+  // Upload an image buffer to Cloudflare Images
+  async uploadImageWithBuffer(
+    buffer: Buffer,
+    filename: string,
+    customId: string | null = null,
+    metadata: Record<string, any> = {},
+    requireSignedURLs: boolean = false
+  ) {
+    const baseUrl = this.getBaseUrl("/images/v1", true);
+    try {
+      const formData = new FormData();
+      const file = new File([new Uint8Array(buffer)], filename, {
+        type: "image/*",
+      });
+      formData.append("file", file);
+      formData.append("metadata", JSON.stringify(metadata));
+      formData.append("requireSignedURLs", requireSignedURLs.toString());
+      if (customId && this.isValidCustomId(customId)) {
+        formData.append("id", customId);
       }
-      const data = await response.json();
-      return UploadImageResponseSchema.parse(data);
+      const response = await fetch(baseUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.getToken(true)}`,
+        },
+        body: formData,
+      });
+      return await this.handleResponse(
+        response,
+        UploadImageResponseSchema.parse
+      );
     } catch (error) {
       console.error("Error uploading image:", error);
     } finally {
@@ -247,11 +271,10 @@ class CloudflareImages {
           Authorization: `Bearer ${this.getToken()}`,
         },
       });
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-      const data = await response.json();
-      return ListImagesResponseSchema.parse(data);
+      return await this.handleResponse(
+        response,
+        ListImagesResponseSchema.parse
+      );
     } catch (error) {
       console.error("Error listing images:", error);
     }
@@ -267,11 +290,10 @@ class CloudflareImages {
           Authorization: `Bearer ${this.getToken()}`,
         },
       });
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-      const data = await response.json();
-      return GetUsageStatsResponseSchema.parse(data);
+      return await this.handleResponse(
+        response,
+        GetUsageStatsResponseSchema.parse
+      );
     } catch (error) {
       console.error("Error getting usage stats:", error);
     }
@@ -315,11 +337,11 @@ class CloudflareImages {
           Authorization: `Bearer ${this.getToken(true)}`,
         },
       });
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-      const data = await response.json();
-      return DeleteImageResponseSchema.parse(data).success;
+
+      return await this.handleResponse(
+        response,
+        DeleteImageResponseSchema.parse
+      ).then((res) => res.success);
     } catch (error) {
       console.error("Error deleting image:", error);
     } finally {
@@ -339,11 +361,10 @@ class CloudflareImages {
           Authorization: `Bearer ${this.getToken(true)}`,
         },
       });
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-      const data = await response.json();
-      return GetImageDetailsResponseSchema.parse(data);
+      return await this.handleResponse(
+        response,
+        GetImageDetailsResponseSchema.parse
+      );
     } catch (error) {
       console.error("Error getting image details:", error);
     } finally {
@@ -369,11 +390,10 @@ class CloudflareImages {
         },
         body: formData,
       });
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-      const data = await response.json();
-      return UpdateImageResponseSchema.parse(data);
+      return await this.handleResponse(
+        response,
+        UpdateImageResponseSchema.parse
+      );
     } catch (error) {
       console.error("Error updating image:", error);
     } finally {
