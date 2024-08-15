@@ -24,7 +24,7 @@
     "url": "https://github.com/tomfanhm/cloudflare-images-kit/issues"
   },
   "homepage": "https://github.com/tomfanhm/cloudflare-images-kit#readme",
-  "version": "1.0.2",
+  "version": "1.0.0",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "type": "module",
