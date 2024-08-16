@@ -22,5 +22,5 @@
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true
   },
-  "include": ["src/**/*", "tests/**/*", "demo/**/*"]
+  "include": ["src/**/*", "tests/**/*", "demo/**/*", "dist/**/*"]
 }
