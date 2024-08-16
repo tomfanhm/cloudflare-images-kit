@@ -49,25 +49,31 @@ describe("CloudflareImage", () => {
     });
 
     test("should return true for valid encoded ID", () => {
-      const testId = uuidv4();
-      const encodedId = cloudflareImages.encodeUUID(testId);
-      expect(cloudflareImages.isValidCustomId(encodedId)).toBe(true);
+      for (let i = 0; i < 10000; i++) {
+        const testId = uuidv4();
+        const encodedId = cloudflareImages.encodeUUID(testId);
+        expect(cloudflareImages.isValidCustomId(encodedId)).toBe(true);
+      }
     });
   });
   // Test function encodeUUID and decodeUUID
   describe("encodeUUID and decodeUUID", () => {
     test("should encode and decode a UUIDv4", () => {
-      const uuid = uuidv4();
-      const encoded = cloudflareImages.encodeUUID(uuid);
-      const decoded = cloudflareImages.decodeUUID(encoded);
-      expect(decoded).toBe(uuid);
+      for (let i = 0; i < 10000; i++) {
+        const uuid = uuidv4();
+        const encoded = cloudflareImages.encodeUUID(uuid);
+        const decoded = cloudflareImages.decodeUUID(encoded);
+        expect(decoded).toBe(uuid);
+      }
     });
 
     test("should encode and decode a UUIDv1", () => {
-      const uuid = uuidv1();
-      const encoded = cloudflareImages.encodeUUID(uuid);
-      const decoded = cloudflareImages.decodeUUID(encoded);
-      expect(decoded).toBe(uuid);
+      for (let i = 0; i < 10000; i++) {
+        const uuid = uuidv1();
+        const encoded = cloudflareImages.encodeUUID(uuid);
+        const decoded = cloudflareImages.decodeUUID(encoded);
+        expect(decoded).toBe(uuid);
+      }
     });
   });
   // Test function uploadImage

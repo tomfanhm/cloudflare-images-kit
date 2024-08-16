@@ -113,9 +113,10 @@ class CloudflareImages {
     }
 
     // Convert byte array to Base64 string
-    const base64String = btoa(
+    let base64String = btoa(
       String.fromCharCode.apply(null, Array.from(buffer))
     );
+    base64String = base64String.replace(/\+/g, "_").replace(/\//g, "~");
     return base64String;
   }
   /**
@@ -124,6 +125,7 @@ class CloudflareImages {
    * @returns The decoded UUID string.
    */
   decodeUUID(encoded: string): string {
+    encoded = encoded.replace(/_/g, "+").replace(/~/g, "/");
     // Decode Base64 string to byte array
     const binaryString = atob(encoded);
     const buffer = new Uint8Array(binaryString.length);
@@ -139,7 +141,7 @@ class CloudflareImages {
       if ([3, 5, 7, 9].includes(index)) uuid += "-";
     });
 
-    return uuid;
+    return uuid.substring(0, 36);
   }
   /**
    * Handles the response from an HTTP request and parses the data using the provided parser function.
